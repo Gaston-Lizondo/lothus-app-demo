@@ -26,6 +26,11 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 .nav button[aria-pressed="true"]{background:var(--blanco);color:var(--negro);border-color:var(--blanco)}
 .phone{width:390px;max-width:100%;height:844px;margin:0 auto 32px;background:var(--negro);border-radius:28px;border:1px solid var(--linea);display:flex;flex-direction:column;position:relative;overflow:hidden}
 @media (max-width:480px){.top{padding:12px 12px 10px}.phone{width:100%;height:calc(100dvh - 104px);min-height:560px;border-radius:0;border:0;margin:0}}
+/* Celular con «Sitio de escritorio» activado: el script agrega .movil y la app escala a todo el ancho */
+html.movil,html.movil body{height:100%;overflow:hidden}
+html.movil .wrap{width:390px;transform-origin:0 0;position:absolute;left:0;top:0}
+html.movil .top{padding:12px 12px 10px}
+html.movil .phone{width:390px;border-radius:0;border:0;margin:0}
 .hd{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 20px;border-bottom:1px solid var(--linea);min-height:74px;flex-shrink:0}
 .hd.nob{border-bottom:0}
 .logo{height:30px;width:auto;display:block}
@@ -99,11 +104,13 @@ a{color:var(--naranja)}
 </style>
 </head>
 <body>
+<div class="wrap" id="wrap">
 <div class="top">
 <div class="top-t"><b>Lothus App</b><span>Demo con datos de ejemplo</span></div>
 <nav class="nav" aria-label="Vistas de la app" id="nav"></nav>
 </div>
 <div class="phone" id="app" aria-live="polite"></div>
+</div>
 
 <script>
 /* ================= Utilidades ================= */
@@ -665,6 +672,21 @@ document.addEventListener('input', onField);
 document.addEventListener('change', e => { if(e.target.tagName==='SELECT') onField(e); });
 document.addEventListener('keydown', e => { if(e.key==='Escape' && S.ficha){ S.ficha = null; render(); } });
 render();
+</script>
+<script>
+/* Si el navegador muestra la página como en una computadora (pantalla física angosta pero ventana ancha), se escala la app a todo el ancho del celular. */
+(function(){
+  const sw = Math.min(screen.width, screen.height), coarse = matchMedia('(pointer:coarse)').matches;
+  function fit(){
+    const root = document.documentElement, w = document.getElementById('wrap'), ph = document.getElementById('app');
+    if(!(coarse && sw <= 600 && innerWidth > 480)){ root.classList.remove('movil'); w.style.transform=''; ph.style.height=''; return; }
+    root.classList.add('movil');
+    const k = innerWidth / 390, topH = w.querySelector('.top').offsetHeight;
+    ph.style.height = Math.max(560, innerHeight / k - topH) + 'px';
+    w.style.transform = 'scale(' + k + ')';
+  }
+  addEventListener('resize', fit); addEventListener('orientationchange', fit); addEventListener('load', fit); fit();
+})();
 </script>
 </body>
 </html>
